@@ -1,0 +1,14 @@
+switch.table:
+  icon: mdi:lightbulb
+light.liseuse:
+  icon: mdi:floor-lamp
+switch.petite_table:
+  icon: mdi:lightbulb
+switch.cuisine:
+  icon: mdi:lightbulb
+switch.012007705ccf7f64307a:
+  icon: mdi:fan
+switch.01200997dc4f220cf11f:
+  icon: mdi:television-classic
+switch.koogeek_p1eu_770fa3:
+  icon: mdi:fan

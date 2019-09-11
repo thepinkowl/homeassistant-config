@@ -1,0 +1,239 @@
+homeassistant:
+  # Name of the location where Home Assistant is running
+  name: Home
+  # Location required to calculate the time the sun rises and sets
+  latitude: !secret latitude
+  longitude: !secret longitude
+  # Impacts weather/sunrise data (altitude above sea level in meters)
+  elevation: 100
+  # metric for Metric, imperial for Imperial
+  unit_system: metric
+  # Pick yours from here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  time_zone: Europe/Paris
+  # Customization file
+  customize: !include customize.yaml
+  auth_providers:
+   - type: homeassistant
+   - type: legacy_api_password
+     api_password: !secret api_password
+
+# Uncomment this if you are using SSL/TLS, running in Docker container, etc.
+# http:
+#   base_url: example.duckdns.org:8123
+http:
+  base_url: !secret base_url
+
+recorder:
+  purge_keep_days: 5
+  purge_interval: 1
+  exclude:
+    entities:
+      - sun.sun
+
+# Configure a default setup of Home Assistant (frontend, api, etc)
+default_config:
+
+# Show the introduction message on startup.
+#introduction:
+
+homekit:
+
+ios:
+  push:
+    categories:
+      - name: On est partis
+        identifier: 'left-home'
+        actions:
+          - identifier: 'TURNOFF_EVERYTHING'
+            title: 'Ta gueule'
+            activationMode: 'background'
+            authenticationRequired: true
+            destructive: true
+            behavior: 'default'
+          - identifier: 'IGNORE_TURNOFF_EVERYTHING'
+            title: 'Pierrrrrrre'
+            activationMode: 'background'
+            authenticationRequired: true
+            destructive: false
+            behavior: 'default'
+
+#notify:
+#  - name: android
+#    platform: fcm-android
+
+# Sensors
+sensor:
+  # Weather prediction
+  - platform: yr
+  - platform: linky
+    username: !secret linky_email
+    password: !secret linky_password
+
+# Text to speech
+tts:
+  - platform: google_translate
+    service_name: google_say
+
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+
+discovery:
+
+light:
+  - platform: switch
+    name: Cuisine
+    entity_id: switch.cuisine
+  - platform: switch
+    name: Petite table
+    entity_id: switch.petite_table
+  - platform: switch
+    name: Table
+    entity_id: switch.table
+
+device_tracker:
+  - platform: nmap_tracker
+    hosts: 192.168.1.0/24
+    consider_home: 180
+    interval_seconds: 30
+
+tuya:
+  username: !secret tuya_username
+  password: !secret tuya_password
+  country_code: !secret tuya_country_code
+  platform: smart_life
+
+api:
+  
+cover:
+  - platform: mqtt
+    name: "Volet salon"
+    command_topic: "shellies/shellyswitch-5A518F/roller/0/command"
+    position_topic: "shellies/shellyswitch-5A518F/roller/0/pos"
+    state_topic: "shellies/shellyswitch-5A518F/roller/0"
+    set_position_topic: "shellies/shellyswitch-5A518F/roller/0/command/pos"
+    qos: 0
+    retain: false
+    payload_open: "open"
+    payload_close: "close"
+    payload_stop: "stop"
+    state_open: "open"
+    state_closed: "close"
+    position_open: 100
+    position_closed: 0
+    optimistic: false
+
+alexa:
+  smart_home:
+    endpoint: https://api.eu.amazonalexa.com/v3/events
+    client_id: !secret alexa_client_id
+    client_secret: !secret alexa_client_secret
+    filter:
+      include_entities:
+        - cover.volet_salon
+      include_domains:
+        - light
+        - media
+        - cover
+      exclude_entities:
+        - light.chambre
+        - light.plafonnier
+        - light.liseuse
+        - light.salon
+        - light.living_room
+#    entity_config:
+#      light.cuina_tele:
+#        name: Cocina tele
+#        description: Llum de la cuina a prop de la tele
+
+input_boolean:
+  home_occupied:
+    name: Quelqun est à la maison
+    initial: on
+  chromecast_flow:
+    name: Auto TV on if Chromecast.play
+    initial: on
+  auto_cover_salon:
+    name: Auto position cover based on Sun
+    initial: off
+  alarm: 
+    name: Alarm
+    initial: off
+  valentin_home: 
+    name: Valentin home
+    initial: on
+  roger_home: 
+    name: Roger home
+    initial: on
+  guests_home: 
+    name: Guests home
+    initial: off
+
+google_assistant:
+  project_id: !secret google_assistant_project_id
+  api_key: !secret google_assistant_api_key
+  exposed_domains:
+    - switch
+    - light
+    - cover
+    - scene
+    - script
+    - vacuum
+    - climate
+    - lock
+    - fan
+  entity_config:
+    light.chambre:
+      expose: false
+    light.kitchen:
+      expose: false
+    light.living_room:
+      expose: false
+    light.salon:
+      expose: false
+    switch.01200997dc4f220cf11f: #tv
+      expose: false
+    switch.012007705ccf7f64307a: #cafetiere
+      expose: false
+    light.liseuse:
+      expose: false
+    light.plafonnier:
+      expose: false
+    switch.cuisine:
+      expose: false
+    switch.petite_table:
+      expose: false
+    switch.table:
+      expose: false
+#    - group
+#  entity_config:
+#    switch.kitchen:
+#      name: CUSTOM_NAME_FOR_GOOGLE_ASSISTANT
+#      aliases:
+#        - BRIGHT_LIGHTS
+#        - ENTRY_LIGHTS
+#    light.living_room:
+#      expose: false
+#      room: LIVING_ROOM
+
+vacuum:
+  - platform: template
+    vacuums:
+      living_room_vacuum:
+        friendly_name: Bobby
+        start:
+          - service: switch.turn_on
+            data:
+              entity_id: switch.bobby
+        stop:
+          - service: switch.turn_on
+            data:
+              entity_id: switch.bobby
+        return_to_base:
+          - service: switch.turn_on
+            data:
+              entity_id: switch.bobby_home
+        clean_spot:
+          - service: switch.turn_on
+            data:
+              entity_id: switch.bobby_spot
