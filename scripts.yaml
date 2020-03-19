@@ -1,0 +1,6 @@
+'1580942713674':
+  alias: delay roger
+  sequence:
+  - delay: '60'
+  - entity_id: switch.koogeek_p1eu_770fa3
+    service: switch.turn_off

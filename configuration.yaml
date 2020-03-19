@@ -17,6 +17,9 @@ homeassistant:
    - type: legacy_api_password
      api_password: !secret api_password
 
+#hacs:
+#  token: !secret git_token
+
 # Uncomment this if you are using SSL/TLS, running in Docker container, etc.
 # http:
 #   base_url: example.duckdns.org:8123
@@ -24,8 +27,9 @@ http:
   base_url: !secret base_url
 
 recorder:
-  purge_keep_days: 5
-  purge_interval: 1
+  db_url: !secret recorder_url
+#  purge_keep_days: 5
+#  purge_interval: 1
   exclude:
     entities:
       - sun.sun
@@ -35,6 +39,8 @@ default_config:
 
 # Show the introduction message on startup.
 #introduction:
+
+shelly:
 
 homekit:
 
@@ -61,13 +67,41 @@ ios:
 #  - name: android
 #    platform: fcm-android
 
+linky:
+  - username: !secret linky_email
+    password: !secret linky_password
+    
 # Sensors
 sensor:
   # Weather prediction
   - platform: yr
-  - platform: linky
-    username: !secret linky_email
-    password: !secret linky_password
+  #- platform: mitemp_bt
+  #  mac: '58:2D:34:38:33:B0'
+  #  name: Salon
+  #  force_update: true
+  #  median: 1
+  #  monitored_conditions:
+  #    - temperature
+  #    - humidity
+  #    - battery
+  #- platform: mitemp_bt
+  #  mac: '58:2D:34:38:33:47'
+  #  name: Cuisine
+  #  force_update: true
+  #  median: 1
+  #  monitored_conditions:
+  #    - temperature
+  #    - humidity
+  #    - battery
+  #- platform: mitemp_bt
+  #  mac: '58:2D:34:38:3A:5A'
+  #  name: Chambre
+  #  force_update: true
+  #  median: 1
+  #  monitored_conditions:
+  #    - temperature
+  #    - humidity
+  #    - battery
 
 # Text to speech
 tts:
@@ -85,11 +119,17 @@ light:
     name: Cuisine
     entity_id: switch.cuisine
   - platform: switch
-    name: Petite table
+    name: Table
     entity_id: switch.petite_table
   - platform: switch
-    name: Table
+    name: Bureau
     entity_id: switch.table
+  - platform: switch
+    name: Lampe Valou
+    entity_id: switch.012007705ccf7f64307a
+  - platform: switch
+    name: Lampe Roger
+    entity_id: switch.koogeek_p1eu_770fa3
 
 device_tracker:
   - platform: nmap_tracker
@@ -104,6 +144,11 @@ tuya:
   platform: smart_life
 
 api:
+
+mqtt:
+  broker: 192.168.1.22
+  username: mqttuser
+  password: mqttpass
   
 cover:
   - platform: mqtt
@@ -171,7 +216,10 @@ input_boolean:
 
 google_assistant:
   project_id: !secret google_assistant_project_id
-  api_key: !secret google_assistant_api_key
+  #api_key: !secret google_assistant_api_key
+  service_account:
+    private_key: !secret google_assistant_private_key
+    client_email: !secret google_assistant_client_email
   exposed_domains:
     - switch
     - light
